@@ -1,88 +1,139 @@
--- Criando o banco de dados
-CREATE DATABASE loja;
-GO
+-- DROP SCHEMA dbo;
 
-USE loja;
-GO
+CREATE SCHEMA dbo;
+-- loja.dbo.Pessoa definition
 
--- Criando a sequence para identificadores de Pessoa
-CREATE SEQUENCE SeqPessoa
-    AS INT
-    START WITH 1
-    INCREMENT BY 1
-    MINVALUE 1
-    NO MAXVALUE
-    CACHE 10;
-GO
+-- Drop table
 
--- Criando tabela Usuario
-CREATE TABLE Usuario (
-    UsuarioID INT PRIMARY KEY IDENTITY(1,1),
-    Nome NVARCHAR(100) NOT NULL,
-    Senha NVARCHAR(100) NOT NULL
+-- DROP TABLE loja.dbo.Pessoa;
+
+CREATE TABLE loja.dbo.Pessoa (
+	PessoaID int IDENTITY(1,1) NOT NULL,
+	Nome nvarchar(100) COLLATE Latin1_General_CI_AS NOT NULL,
+	Endereco nvarchar(255) COLLATE Latin1_General_CI_AS NULL,
+	Telefone nvarchar(20) COLLATE Latin1_General_CI_AS NULL,
+	TipoPessoa char(1) COLLATE Latin1_General_CI_AS NULL,
+	CONSTRAINT PK__Pessoa__2F5F5632F8111EC5 PRIMARY KEY (PessoaID)
 );
-GO
+ALTER TABLE loja.dbo.Pessoa WITH NOCHECK ADD CONSTRAINT CK__Pessoa__TipoPess__3A81B327 CHECK (([TipoPessoa]='J' OR [TipoPessoa]='F'));
 
--- Criando tabela Pessoa
-CREATE TABLE Pessoa (
-    PessoaID INT PRIMARY KEY DEFAULT NEXT VALUE FOR SeqPessoa,
-    Nome NVARCHAR(100) NOT NULL,
-    Endereco NVARCHAR(255),
-    Telefone NVARCHAR(20),
-    TipoPessoa CHAR(1) CHECK (TipoPessoa IN ('F', 'J'))
-);
-GO
 
--- Criando tabela PessoaFisica
-CREATE TABLE PessoaFisica (
-    PessoaID INT PRIMARY KEY,
-    CPF CHAR(11) UNIQUE NOT NULL,
-    CONSTRAINT FK_PessoaFisica_Pessoa FOREIGN KEY (PessoaID) REFERENCES Pessoa(PessoaID)
-);
-GO
+-- loja.dbo.Produto definition
 
--- Criando tabela PessoaJuridica
-CREATE TABLE PessoaJuridica (
-    PessoaID INT PRIMARY KEY,
-    CNPJ CHAR(14) UNIQUE NOT NULL,
-    CONSTRAINT FK_PessoaJuridica_Pessoa FOREIGN KEY (PessoaID) REFERENCES Pessoa(PessoaID)
-);
-GO
+-- Drop table
 
--- Criando tabela Produto
-CREATE TABLE Produto (
-    ProdutoID INT PRIMARY KEY IDENTITY(1,1),
-    Nome NVARCHAR(100) NOT NULL,
-    Quantidade INT NOT NULL,
-    Preco DECIMAL(10, 2) NOT NULL
-);
-GO
+-- DROP TABLE loja.dbo.Produto;
 
--- Criando tabela MovimentoCompra
-CREATE TABLE MovimentoCompra (
-    MovimentoCompraID INT PRIMARY KEY IDENTITY(1,1),
-    UsuarioID INT,
-    ProdutoID INT,
-    PessoaJuridicaID INT,
-    Quantidade INT NOT NULL,
-    PrecoUnitario DECIMAL(10, 2) NOT NULL,
-    DataCompra DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_MovimentoCompra_Usuario FOREIGN KEY (UsuarioID) REFERENCES Usuario(UsuarioID),
-    CONSTRAINT FK_MovimentoCompra_Produto FOREIGN KEY (ProdutoID) REFERENCES Produto(ProdutoID),
-    CONSTRAINT FK_MovimentoCompra_PessoaJuridica FOREIGN KEY (PessoaJuridicaID) REFERENCES PessoaJuridica(PessoaID)
+CREATE TABLE loja.dbo.Produto (
+	ProdutoID int IDENTITY(1,1) NOT NULL,
+	Nome nvarchar(100) COLLATE Latin1_General_CI_AS NOT NULL,
+	Quantidade int NOT NULL,
+	Preco decimal(10,2) NOT NULL,
+	CONSTRAINT PK__Produto__9C8800C386C54574 PRIMARY KEY (ProdutoID)
 );
-GO
 
--- Criando tabela MovimentoVenda
-CREATE TABLE MovimentoVenda (
-    MovimentoVendaID INT PRIMARY KEY IDENTITY(1,1),
-    UsuarioID INT,
-    ProdutoID INT,
-    PessoaFisicaID INT,
-    Quantidade INT NOT NULL,
-    DataVenda DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_MovimentoVenda_Usuario FOREIGN KEY (UsuarioID) REFERENCES Usuario(UsuarioID),
-    CONSTRAINT FK_MovimentoVenda_Produto FOREIGN KEY (ProdutoID) REFERENCES Produto(ProdutoID),
-    CONSTRAINT FK_MovimentoVenda_PessoaFisica FOREIGN KEY (PessoaFisicaID) REFERENCES PessoaFisica(PessoaID)
+
+-- loja.dbo.Usuario definition
+
+-- Drop table
+
+-- DROP TABLE loja.dbo.Usuario;
+
+CREATE TABLE loja.dbo.Usuario (
+	UsuarioID int IDENTITY(1,1) NOT NULL,
+	Nome nvarchar(100) COLLATE Latin1_General_CI_AS NOT NULL,
+	Senha nvarchar(100) COLLATE Latin1_General_CI_AS NOT NULL,
+	CONSTRAINT PK__Usuario__2B3DE798C3424E15 PRIMARY KEY (UsuarioID)
 );
-GO
+
+
+-- loja.dbo.Movimentacao definition
+
+-- Drop table
+
+-- DROP TABLE loja.dbo.Movimentacao;
+
+CREATE TABLE loja.dbo.Movimentacao (
+	MovimentacaoID int IDENTITY(1,1) NOT NULL,
+	Tipo char(1) COLLATE Latin1_General_CI_AS NULL,
+	ProdutoID int NULL,
+	Quantidade int NULL,
+	Preco decimal(10,2) NULL,
+	DataMovimentacao date NULL,
+	PessoaID int NULL,
+	CONSTRAINT PK__Moviment__509C01B50512867D PRIMARY KEY (MovimentacaoID),
+	CONSTRAINT FK_Pessoa FOREIGN KEY (PessoaID) REFERENCES loja.dbo.Pessoa(PessoaID),
+	CONSTRAINT FK_Produto FOREIGN KEY (ProdutoID) REFERENCES loja.dbo.Produto(ProdutoID)
+);
+ALTER TABLE loja.dbo.Movimentacao WITH NOCHECK ADD CONSTRAINT CK__Movimentac__Tipo__6C190EBB CHECK (([Tipo]='S' OR [Tipo]='E'));
+
+
+-- loja.dbo.PessoaFisica definition
+
+-- Drop table
+
+-- DROP TABLE loja.dbo.PessoaFisica;
+
+CREATE TABLE loja.dbo.PessoaFisica (
+	PessoaID int NOT NULL,
+	CPF char(11) COLLATE Latin1_General_CI_AS NOT NULL,
+	CONSTRAINT PK__PessoaFi__2F5F5632A2F1B545 PRIMARY KEY (PessoaID),
+	CONSTRAINT UQ__PessoaFi__C1F8973136D7731D UNIQUE (CPF),
+	CONSTRAINT FK_PessoaFisica_Pessoa FOREIGN KEY (PessoaID) REFERENCES loja.dbo.Pessoa(PessoaID)
+);
+
+
+-- loja.dbo.PessoaJuridica definition
+
+-- Drop table
+
+-- DROP TABLE loja.dbo.PessoaJuridica;
+
+CREATE TABLE loja.dbo.PessoaJuridica (
+	PessoaID int NOT NULL,
+	CNPJ char(14) COLLATE Latin1_General_CI_AS NOT NULL,
+	CONSTRAINT PK__PessoaJu__2F5F56327A186D82 PRIMARY KEY (PessoaID),
+	CONSTRAINT UQ__PessoaJu__AA57D6B473AE03B7 UNIQUE (CNPJ),
+	CONSTRAINT FK_PessoaJuridica_Pessoa FOREIGN KEY (PessoaID) REFERENCES loja.dbo.Pessoa(PessoaID)
+);
+
+
+-- loja.dbo.MovimentoCompra definition
+
+-- Drop table
+
+-- DROP TABLE loja.dbo.MovimentoCompra;
+
+CREATE TABLE loja.dbo.MovimentoCompra (
+	MovimentoCompraID int IDENTITY(1,1) NOT NULL,
+	UsuarioID int NULL,
+	ProdutoID int NULL,
+	PessoaJuridicaID int NULL,
+	Quantidade int NOT NULL,
+	PrecoUnitario decimal(10,2) NOT NULL,
+	DataCompra datetime DEFAULT getdate() NULL,
+	CONSTRAINT PK__Moviment__B810DC073763CD9F PRIMARY KEY (MovimentoCompraID),
+	CONSTRAINT FK_MovimentoCompra_PessoaJuridica FOREIGN KEY (PessoaJuridicaID) REFERENCES loja.dbo.PessoaJuridica(PessoaID),
+	CONSTRAINT FK_MovimentoCompra_Produto FOREIGN KEY (ProdutoID) REFERENCES loja.dbo.Produto(ProdutoID),
+	CONSTRAINT FK_MovimentoCompra_Usuario FOREIGN KEY (UsuarioID) REFERENCES loja.dbo.Usuario(UsuarioID)
+);
+
+
+-- loja.dbo.MovimentoVenda definition
+
+-- Drop table
+
+-- DROP TABLE loja.dbo.MovimentoVenda;
+
+CREATE TABLE loja.dbo.MovimentoVenda (
+	MovimentoVendaID int IDENTITY(1,1) NOT NULL,
+	UsuarioID int NULL,
+	ProdutoID int NULL,
+	PessoaFisicaID int NULL,
+	Quantidade int NOT NULL,
+	DataVenda datetime DEFAULT getdate() NULL,
+	CONSTRAINT PK__Moviment__006DD077BB80631F PRIMARY KEY (MovimentoVendaID),
+	CONSTRAINT FK_MovimentoVenda_PessoaFisica FOREIGN KEY (PessoaFisicaID) REFERENCES loja.dbo.PessoaFisica(PessoaID),
+	CONSTRAINT FK_MovimentoVenda_Produto FOREIGN KEY (ProdutoID) REFERENCES loja.dbo.Produto(ProdutoID),
+	CONSTRAINT FK_MovimentoVenda_Usuario FOREIGN KEY (UsuarioID) REFERENCES loja.dbo.Usuario(UsuarioID)
+);
